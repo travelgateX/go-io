@@ -8,7 +8,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github/travelgateX/go-io/asyncio/internal"
+	"github.com/travelgateX/go-io/asyncio/internal"
 )
 
 var _ io.WriteCloser = &TickedBuffer{}
