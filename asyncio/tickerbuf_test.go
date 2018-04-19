@@ -11,7 +11,7 @@
 //			1, 2. concurrency writes
 //			2. buffer size
 //			2. block size
-package syncio
+package asyncio
 
 import (
 	"sync"

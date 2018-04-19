@@ -1,13 +1,14 @@
-// Package syncio provides asynchronous non-bloking io operations
-package syncio
+// Package asyncio provides asynchronous non-bloking io operations
+package asyncio
 
 import (
 	"errors"
-	"go-io/syncio/internal"
 	"io"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github/travelgateX/go-io/asyncio/internal"
 )
 
 var _ io.WriteCloser = &TickedBuffer{}
