@@ -41,25 +41,6 @@ type TickedBuffer struct {
 	size          int
 }
 
-// Stats contains performance statistics, some of the settings for this writer
-// can be hard to profile and depend on the environment and use case, these
-// stats are meant to help to adjust the settings for a better performance
-type Stats struct {
-	// BufferAllocs is the number of new buffers
-	// that had to be created because the pool had not enough
-	// free buffers. Note that a pool is initialized without buffers.
-	BufferAllocs int32
-	// Count of errors obtained trying to write to the underlying writer
-	FlushErrors int32
-	// Writes to our writer that couldn't be attented and were lost in consequence
-	DroppedWrites int32
-}
-
-// Stats returns a copy of the current writer stats
-func (tb *TickedBuffer) Stats() Stats {
-	return tb.stats
-}
-
 // NewTickedBuffer wraps a writer with a buffer layer that will write to an underlying writer
 // when its buffer is full or a timer ticks
 // Call Close to free goroutines, Close blocks until all buffers flush, calling Close and then Write won't panic
@@ -191,4 +172,23 @@ func (tb *TickedBuffer) flush() {
 		tb.pool.Put(buf)
 		tb.wg.Done()
 	}()
+}
+
+// Stats contains performance statistics, some of the settings for this writer
+// can be hard to profile and depend on the environment and use case, these
+// stats are meant to help to adjust the settings for a better performance
+type Stats struct {
+	// BufferAllocs is the number of new buffers
+	// that had to be created because the pool had not enough
+	// free buffers. Note that a pool is initialized without buffers.
+	BufferAllocs int32
+	// Count of errors obtained trying to write to the underlying writer
+	FlushErrors int32
+	// Writes to our writer that couldn't be attented and were lost in consequence
+	DroppedWrites int32
+}
+
+// Stats returns a copy of the current writer stats
+func (tb *TickedBuffer) Stats() Stats {
+	return tb.stats
 }

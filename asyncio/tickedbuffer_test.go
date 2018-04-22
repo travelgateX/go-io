@@ -1,16 +1,3 @@
-//	to test:
-//		concurrent writes
-//		ticks
-//	to benchmark:
-//		display:
-//			1. channel dropped writes
-//			2. buffer allocs
-//			2. writes and bytes
-//		variables:
-//			1. channel size
-//			1, 2. concurrency writes
-//			2. buffer size
-//			2. block size
 package asyncio
 
 import (
@@ -27,8 +14,7 @@ type testWriter struct {
 
 func (w *testWriter) Write(p []byte) (int, error) {
 	atomic.AddInt64(&w.writes, 1)
-	atomic.AddInt64(&w.bytes, int64(len(p)))
-	time.Sleep(time.Millisecond * 500)
+	atomic.AddInt64(&w.bytes, int64(len(p))
 	return len(p), nil
 }
 
