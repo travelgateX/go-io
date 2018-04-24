@@ -5,12 +5,12 @@ import (
 )
 
 type Formatter interface {
-	Format(*bytes.Buffer, string, Level)
+	Format(*bytes.Buffer, string, Level, Fields)
 }
 
 type TextFormatter struct{}
 
-func (TextFormatter) Format(buf *bytes.Buffer, m string, lvl Level) {
+func (TextFormatter) Format(buf *bytes.Buffer, m string, lvl Level, f Fields) {
 	const (
 		red    = "\x1b[31;1m"
 		yellow = "\x1b[33;1m"

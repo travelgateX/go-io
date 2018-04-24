@@ -19,9 +19,12 @@ type Setup struct {
 	W io.Writer
 }
 
+type Fields map[string]interface{}
+
 type Logger struct {
 	Setups      []Setup
 	FatalSetups []Setup
+	f           Fields
 	// only those logs with level lower or equal than this will be registered
 	MaxLvl Level
 }
@@ -40,6 +43,13 @@ func NewStdLogger() *Logger {
 	}
 }
 
+// WithFields returns a new instance of logger with fields
+func (l *Logger) WithFields(f Fields) *Logger {
+	newl := *l
+	newl.f = f
+	return &newl
+}
+
 func (l *Logger) Log(lvl Level, m string) {
 	if lvl > l.MaxLvl {
 		return
@@ -54,7 +64,7 @@ func (l *Logger) Log(lvl Level, m string) {
 
 	for _, s := range setups {
 		b := bufferPool.Get().(*bytes.Buffer)
-		s.F.Format(b, m, lvl)
+		s.F.Format(b, m, lvl, l.f)
 		s.W.Write(b.Bytes())
 		bufferPool.Put(b)
 	}

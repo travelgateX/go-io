@@ -3,35 +3,37 @@ package elastic
 import (
 	"bytes"
 	"encoding/json"
-	"go-io/log"
 	"time"
 
 	uuid "github.com/satori/go.uuid"
+
+	"github.com/travelgateX/go-io/log"
 )
 
 const indexLayout = "2006.01.02"
 const timestampLayout = time.RFC3339
 
 type BulkFormatter struct {
-	Index  string
-	Type   string
-	fields string
+	Index string
+	Type  string
 }
 
-func (f *BulkFormatter) WithFields(fields map[string]interface{}) (*BulkFormatter, error) {
+func formatFields(fields log.Fields) string {
+	if len(fields) == 0 {
+		return ""
+	}
 	b, err := json.Marshal(fields)
 	if err != nil {
-		return nil, err
+		return ""
 	}
 	if len(b) < 2 {
-		return nil, nil
+		return ""
 	}
-	ret := *f
-	ret.fields = "," + string(b[1:len(b)-1]) // remove first and last '{' '}'
-	return &ret, nil
+
+	return "," + string(b[1:len(b)-1]) // remove first and last '{' '}'
 }
 
-func (f *BulkFormatter) Format(b *bytes.Buffer, m string, lvl log.Level) {
+func (f *BulkFormatter) Format(b *bytes.Buffer, m string, lvl log.Level, fields log.Fields) {
 	t := time.Now().UTC()
 
 	u, err := uuid.NewV4()
@@ -53,6 +55,6 @@ func (f *BulkFormatter) Format(b *bytes.Buffer, m string, lvl log.Level) {
 	// buf has been copied to b, its reusable
 	timebuf = buf[:0]
 	ts := t.AppendFormat(timebuf, timestampLayout)
-	b.WriteString(`{"@Timestamp":"` + string(ts) + `","level":"` + lvl.String() + `","message":"` + m + `"` + f.fields + `}`)
+	b.WriteString(`{"@Timestamp":"` + string(ts) + `","level":"` + lvl.String() + `","message":"` + m + `"` + formatFields(fields) + `}`)
 	b.WriteByte('\n')
 }
