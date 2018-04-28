@@ -28,25 +28,25 @@ func Verbose(m string) {
 }
 
 func Fatalf(format string, a ...interface{}) {
-	Output.Logf(LvlFatal, format, a)
+	Output.Logf(LvlFatal, format, a...)
 }
 
 func Errorf(format string, a ...interface{}) {
-	Output.Logf(LvlError, format, a)
+	Output.Logf(LvlError, format, a...)
 }
 
 func Warningf(format string, a ...interface{}) {
-	Output.Logf(LvlWarning, format, a)
+	Output.Logf(LvlWarning, format, a...)
 }
 
 func Infof(format string, a ...interface{}) {
-	Output.Logf(LvlInfo, format, a)
+	Output.Logf(LvlInfo, format, a...)
 }
 
 func Debugf(format string, a ...interface{}) {
-	Output.Logf(LvlDebug, format, a)
+	Output.Logf(LvlDebug, format, a...)
 }
 
 func Verbosef(format string, a ...interface{}) {
-	Output.Logf(LvlVerbose, format, a)
+	Output.Logf(LvlVerbose, format, a...)
 }

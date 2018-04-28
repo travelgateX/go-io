@@ -66,6 +66,7 @@ func (l *Logger) Log(lvl Level, m string) {
 		b := bufferPool.Get().(*bytes.Buffer)
 		s.F.Format(b, m, lvl, l.f)
 		s.W.Write(b.Bytes())
+		b.Reset()
 		bufferPool.Put(b)
 	}
 }

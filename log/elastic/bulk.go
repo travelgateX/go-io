@@ -18,19 +18,11 @@ type BulkFormatter struct {
 	Type  string
 }
 
-func formatFields(fields log.Fields) string {
-	if len(fields) == 0 {
-		return ""
-	}
-	b, err := json.Marshal(fields)
-	if err != nil {
-		return ""
-	}
-	if len(b) < 2 {
-		return ""
-	}
-
-	return "," + string(b[1:len(b)-1]) // remove first and last '{' '}'
+type doc struct {
+	Timestamp string `json:"@Timestamp"`
+	Level     string `json:"level"`
+	Message   string `json:"message"`
+	Fields    log.Fields
 }
 
 func (f *BulkFormatter) Format(b *bytes.Buffer, m string, lvl log.Level, fields log.Fields) {
@@ -55,6 +47,12 @@ func (f *BulkFormatter) Format(b *bytes.Buffer, m string, lvl log.Level, fields 
 	// buf has been copied to b, its reusable
 	timebuf = buf[:0]
 	ts := t.AppendFormat(timebuf, timestampLayout)
-	b.WriteString(`{"@Timestamp":"` + string(ts) + `","level":"` + lvl.String() + `","message":"` + m + `"` + formatFields(fields) + `}`)
+
+	json.NewEncoder(b).Encode(doc{
+		Timestamp: string(ts),
+		Level:     lvl.String(),
+		Message:   m,
+		Fields:    log.Fields{"proba field": "value field"},
+	})
 	b.WriteByte('\n')
 }
