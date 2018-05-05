@@ -1,4 +1,4 @@
-package asyncio
+package syncio
 
 import (
 	"sync"
@@ -14,7 +14,7 @@ type testWriter struct {
 
 func (w *testWriter) Write(p []byte) (int, error) {
 	atomic.AddInt64(&w.writes, 1)
-	atomic.AddInt64(&w.bytes, int64(len(p))
+	atomic.AddInt64(&w.bytes, int64(len(p)))
 	return len(p), nil
 }
 
@@ -22,7 +22,7 @@ func TestConcurrentWrites(t *testing.T) {
 	concurrency := 100
 	size := 1024
 	tw := &testWriter{}
-	tb := NewTickedBuffer(tw, size, 2, concurrency, time.Second)
+	tb := NewBuffer(tw, SetBufferSize(size))
 
 	p := make([]byte, size)
 	wg := sync.WaitGroup{}
@@ -61,7 +61,7 @@ func TestTicks(t *testing.T) {
 	block := size / iterations
 
 	tw := &testWriter{}
-	tb := NewTickedBuffer(tw, size+1, 2, 1, tickInterval)
+	tb := NewBuffer(tw, SetBufferSize(size+1), SetFlushInterval(tickInterval/2))
 
 	p := make([]byte, block)
 	for i := 0; i < iterations; i++ {
@@ -70,7 +70,7 @@ func TestTicks(t *testing.T) {
 			t.Fatalf(err.Error())
 		}
 		if n != block {
-			t.Fatalf("writed %v bytes, exepcted: %v", n, block)
+			t.Fatalf("writed %v bytes, expected: %v", n, block)
 		}
 		time.Sleep(tickInterval)
 	}
@@ -87,10 +87,30 @@ func TestTicks(t *testing.T) {
 	}
 }
 
-func BenchmarkConcurrentWrites(b *testing.B) {
+func TestClose(t *testing.T) {
+	tw := &testWriter{}
+	tb := NewBuffer(tw)
+
+	p := make([]byte, 8)
+	tb.Write(p)
+	tb.Close()
+	n, err := tb.Write(p)
+	if n != 0 || err == nil {
+		t.Errorf("close on write results: %v bytes read, error: %v", n, err)
+	}
+
+	if tw.writes != 1 {
+		t.Errorf("test writer writes: %v, actual writes: %v", tw.writes, 1)
+	}
+	if tw.bytes != int64(len(p)) {
+		t.Errorf("test writer bytes: %v, actual bytes: %v", tw.bytes, len(p))
+	}
+}
+
+func BenchmarkWrites(b *testing.B) {
 	size := 1024
 	tw := &testWriter{}
-	tb := NewTickedBuffer(tw, size*100, b.N/100, b.N, time.Second*2)
+	tb := NewBuffer(tw, SetBufferSize(size*100), SetBufferPoolSize(b.N/100), SetFlushInterval(time.Second*2))
 
 	p := make([]byte, size)
 	for n := 0; n < b.N; n++ {
@@ -98,5 +118,34 @@ func BenchmarkConcurrentWrites(b *testing.B) {
 	}
 
 	tb.Close()
-	b.Logf("Writer stats: %v Dropped writes: %v, buffers: %v", tw, tb.stats.DroppedWrites, tb.stats.BufferAllocs)
+	b.Logf("Writer stats: %v, buffers: %v", tw, tb.stats.BufferAllocs)
+}
+
+func BenchmarkParallelWrites(b *testing.B) {
+	size := 1024
+	tw := &testWriter{}
+	tb := NewBuffer(tw, SetBufferSize(size*100), SetBufferPoolSize(b.N/100), SetFlushInterval(time.Second*2))
+
+	work := make(chan []byte, 8)
+
+	n := 8
+	wg := sync.WaitGroup{}
+	wg.Add(n)
+	for i := 0; i < n; i++ {
+		go func() {
+			for w := range work {
+				tb.Write(w)
+			}
+			wg.Done()
+		}()
+	}
+
+	p := make([]byte, size)
+	for n := 0; n < b.N; n++ {
+		work <- p
+	}
+	close(work)
+	wg.Wait()
+	tb.Close()
+	b.Logf("Writer stats: %v, buffers: %v", tw, tb.stats.BufferAllocs)
 }
