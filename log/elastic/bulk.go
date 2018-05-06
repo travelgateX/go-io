@@ -52,7 +52,7 @@ func (f *BulkFormatter) Format(b *bytes.Buffer, m string, lvl log.Level, fields 
 		Timestamp: string(ts),
 		Level:     lvl.String(),
 		Message:   m,
-		Fields:    log.Fields{"proba field": "value field"},
+		Fields:    fields,
 	})
 	b.WriteByte('\n')
 }
