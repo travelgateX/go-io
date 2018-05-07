@@ -69,11 +69,13 @@ func NewBuffer(w io.Writer, options ...BufferOption) *Buffer {
 			for !tb.closed {
 				select {
 				case <-t.C:
+					tb.bufmu.Lock()
 					if !tb.flushedBetweenTicks {
 						tb.flush()
 					} else {
 						tb.flushedBetweenTicks = false
 					}
+					tb.bufmu.Unlock()
 				}
 			}
 			t.Stop()
