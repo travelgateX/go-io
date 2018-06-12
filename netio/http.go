@@ -1,4 +1,4 @@
-package httpio
+package netio
 
 import (
 	"bytes"
@@ -7,15 +7,15 @@ import (
 	"net/http"
 )
 
-// HTTP gives io.Write methods to a http Client
-type HTTP struct {
+// HTTPWriter gives io.Write methods to a http Client
+type HTTPWriter struct {
 	Client *http.Client
 	Method string
 	URL    string
 	Header http.Header
 }
 
-func (w *HTTP) Write(p []byte) (int, error) {
+func (w *HTTPWriter) Write(p []byte) (int, error) {
 	br := bytes.NewReader(p)
 	req, err := http.NewRequest(w.Method, w.URL, br)
 	if err != nil {
