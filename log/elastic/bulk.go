@@ -41,7 +41,7 @@ func (f *BulkFormatter) Format(b *bytes.Buffer, m string, lvl log.Level, fields 
 
 	timebuf := buf[:0]
 	day := t.AppendFormat(timebuf, indexLayout)
-	b.WriteString(`{"index":{"_index":"` + f.Index + string(day) + `","_type":"` + f.Type + `"` + id + `}}`)
+	b.WriteString(`{"index":{"_index":"` + f.Index + "-" + string(day) + `","_type":"` + f.Type + `"` + id + `}}`)
 	b.WriteByte('\n')
 
 	// buf has been copied to b, its reusable
