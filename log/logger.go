@@ -46,7 +46,17 @@ func NewStdLogger() *Logger {
 // WithFields returns a new instance of logger with fields
 func (l *Logger) WithFields(f Fields) *Logger {
 	newl := *l
-	newl.f = f
+	if newl.f == nil {
+		newl.f = f
+	} else {
+		newl.f = make(Fields, len(newl.f) + len(f))
+		for k, v := range l.f {
+			newl.f[k] = v
+		}
+		for k, v := range f {
+			newl.f[k] = v
+		}
+	}
 	return &newl
 }
 
