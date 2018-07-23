@@ -28,10 +28,12 @@ type doc struct {
 func (f *BulkFormatter) Format(b *bytes.Buffer, m string, lvl log.Level, fields log.Fields) {
 	t := time.Now().UTC()
 
-	u := uuid.NewV4()
-
-	// elastic creates an ID if the log doesn't contains one
-	id := `, "_id":"` + u.String() + `"`
+	u, err := uuid.NewV4()
+	var id string
+	if err == nil {
+		// elastic creates an ID if the log doesn't contains one
+		id = `, "_id":"` + u.String() + `"`
+	}
 
 	// format dates for each log, the index must contain a date at the end and a timestamps also required
 	const timeBufferSize = len(timestampLayout) + 10 // timestampLayout is bigger than indexLayout
