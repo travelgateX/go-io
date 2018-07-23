@@ -45,9 +45,14 @@ func NewStdLogger() *Logger {
 
 // WithFields returns a new instance of logger with fields
 func (l *Logger) WithFields(f Fields) *Logger {
-	newl := *l
-	newl.f = f
-	return &newl
+	if l.f == nil {
+		l.f = Fields{}
+	}
+
+	for k, v := range f {
+		l.f[k] = v
+	}
+	return l
 }
 
 func (l *Logger) Log(lvl Level, m string) {
